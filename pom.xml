@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>2.6.3</version>
+        <relativePath/> <!-- lookup parent from repository -->
+    </parent>
+    <groupId>org.example</groupId>
+    <artifactId>monitoring-task</artifactId>
+    <version>1.0.0-BUILD-SNAPSHOT</version>
+    <name>monitoring-task</name>
+    <description>Demo project for Prometheus SCDF Monitoring</description>
+
+    <properties>
+        <java.version>1.8</java.version>
+        <prometheus-rsocket-spring.version>1.3.0</prometheus-rsocket-spring.version>
+        <spring-cloud-task-dependencies.version>2.4.0</spring-cloud-task-dependencies.version>
+    </properties>
+
+    <dependencies>
+        <!-- Enable Spring Batch and Spring Cloud Task -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-batch</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-task</artifactId>
+        </dependency>
+
+        <!-- Data Source Configurations -->
+        <dependency>
+            <groupId>org.mariadb.jdbc</groupId>
+            <artifactId>mariadb-java-client</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- Enable Prometheus metrics collection (via Prometheus RSocket Proxy) -->
+        <!-- Internally it imports the org.springframework.boot:spring-boot-actuator-autoconfigure dependency -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>io.micrometer.prometheus</groupId>
+            <artifactId>prometheus-rsocket-spring</artifactId>
+            <version>${prometheus-rsocket-spring.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.micrometer.prometheus</groupId>
+            <artifactId>prometheus-rsocket-client</artifactId>
+            <version>${prometheus-rsocket-spring.version}</version>
+        </dependency>
+    </dependencies>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-task-dependencies</artifactId>
+                <version>${spring-cloud-task-dependencies.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-dataflow-apps-metadata-plugin</artifactId>
+                <version>1.0.2</version>
+                <configuration>
+                    <storeFilteredMetadata>true</storeFilteredMetadata>
+                    <metadataFilter>
+                        <names>
+                        </names>
+                        <sourceTypes>
+                            <filter>io.spring.task.taskdemometrics.TaskDemoMetricsProperties</filter>
+                        </sourceTypes>
+                    </metadataFilter>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>aggregate-metadata</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>aggregate-metadata</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <image>
+                        <name>springcloudtask/${project.artifactId}:${project.version}</name>
+                        <bindings>
+                            <binding>/tmp:/tmp</binding>
+                        </bindings>
+                    </image>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <repositories>
+        <repository>
+            <id>spring-snapshots</id>
+            <name>Spring Snapshots</name>
+            <url>https://repo.spring.io/snapshot</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>spring-milestones</id>
+            <name>Spring Milestones</name>
+            <url>https://repo.spring.io/milestone</url>
+        </repository>
+    </repositories>
+    <pluginRepositories>
+        <pluginRepository>
+            <id>spring-snapshots</id>
+            <name>Spring Snapshots</name>
+            <url>https://repo.spring.io/snapshot</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </pluginRepository>
+        <pluginRepository>
+            <id>spring-milestones</id>
+            <name>Spring Milestones</name>
+            <url>https://repo.spring.io/milestone</url>
+        </pluginRepository>
+    </pluginRepositories>
+
+
+</project>
